@@ -5,12 +5,12 @@ import sys
 import time
 from queue import Queue
 
+from bpe.equipments.logging.Handlers import PipeLineHandler
 from bpe.equipments.logging.LogCatServer import LogCatServer
 from bpe.equipments.platform.ColorCollection import set_color_loop
 from bpe.equipments.security.SymmetricFernet import SymmetricFernet
 from bpe.pyconio import clrscr, WHITE, BLACK, LIGHTGREEN, LIGHTCYAN, LIGHTRED, YELLOW, RED, \
     settitle, textcolor, textbackground
-from utils.CustomLogging import PipeLineHandler
 
 
 def out(record):

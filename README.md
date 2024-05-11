@@ -25,10 +25,15 @@ This project is designed to provide developers with a comprehensive logging util
 
 ### Structure
 
-The repository is organized into the following directories:
+The repository is for the LogCatConsole logging utility, which consists of the following components:
 
-1. **LogCatConsole:** Contains the core implementation of the LogCatConsole logging utility.
-2. **LogCatCryptography:** Provides cryptographic functionalities for renewing the symmetric key and salt.
+1. **LogCatConsole.py:** Contains the core implementation of the LogCatConsole logging utility.
+2. **LogCatCryptography.py:** Provides cryptographic functionalities for renewing the symmetric key and salt.
+3. **logcat_bash.bat:** A batch script for running the LogCatConsole utility on Windows.
+
+### Insight
+
+![Demo](demo.gif)
 
 ## License
 

@@ -4,13 +4,13 @@ disable_existing_loggers: False
 
 formatters:
   logcatConsoleFormatter:
-    class: utils.CustomLogging.LogCatFormatter
+    class: bpe.equipments.logging.Formatters.RawFormatter
 
   fileFormatter:
     format: '%(asctime)s | %(name)s | %(levelname)s : %(message)s'
 
   logcatFormatter:
-    class : utils.CustomLogging.LogCatFormatter
+    class : bpe.equipments.logging.Formatters.RawFormatter
 
 handlers:
   permanent:
@@ -38,7 +38,7 @@ handlers:
 
   console:
     level: DEBUG
-    class: utils.CustomLogging.PipeLineHandler
+    class: bpe.equipments.logging.Handlers.PipeLineHandler
     formatter: logcatConsoleFormatter
 
 loggers:
