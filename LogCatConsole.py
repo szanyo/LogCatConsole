@@ -7,7 +7,6 @@ from queue import Queue
 
 from bpe.equipments.logging.LogCatServer import LogCatServer
 from bpe.equipments.platform.ColorCollection import set_color_loop
-from bpe.equipments.platform.System import trim_path
 from bpe.equipments.security.SymmetricFernet import SymmetricFernet
 from bpe.pyconio import clrscr, WHITE, BLACK, LIGHTGREEN, LIGHTCYAN, LIGHTRED, YELLOW, RED, \
     settitle, textcolor, textbackground
@@ -26,9 +25,9 @@ def out(record):
     print(f"{record['asctime']} | {record['levelname']} | {record['name']} | {record['msg']}")
 
 
-CURRENT_DIR = trim_path(os.path.dirname(os.path.abspath(sys.argv[0])), "LogCat")
-LOGCAT_CRYPTOGRAPHY_CONFIGURATION_FILE_LOCATION = os.path.join(CURRENT_DIR, "LogCat", "logcat_hazmat.yaml")
-LOGGING_CONFIGURATION_FILE_LOCATION = os.path.join(CURRENT_DIR, "LogCat", "logging.yaml")
+CURRENT_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+LOGCAT_CRYPTOGRAPHY_CONFIGURATION_FILE_LOCATION = os.path.join(CURRENT_DIR, "logcat_hazmat.yaml")
+LOGGING_CONFIGURATION_FILE_LOCATION = os.path.join(CURRENT_DIR, "logging.yaml")
 NAME_LENGTH = 20
 
 settitle("LogCat Console")

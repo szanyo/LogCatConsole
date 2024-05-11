@@ -27,8 +27,8 @@ This project is designed to provide developers with a comprehensive logging util
 
 The repository is organized into the following directories:
 
-1. **LogCatConsole:** Contains the core implementation of the LogCatConsole logging utility, including the `logCatConsole.py` module.
-2. 
+1. **LogCatConsole:** Contains the core implementation of the LogCatConsole logging utility.
+2. **LogCatCryptography:** Provides cryptographic functionalities for renewing the symmetric key and salt.
 
 ## License
 

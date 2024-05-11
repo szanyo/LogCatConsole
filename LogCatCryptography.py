@@ -14,8 +14,8 @@ def trim_word(path, word):
 
 
 # trim LogCat from the path end
-CURRENT_DIR = trim_word(os.path.dirname(os.path.abspath(sys.argv[0])), "LogCat")
-LOGCAT_CONFIGURATION_FILE_LOCATION = os.path.join(CURRENT_DIR, "data", "boot", "logcat_hazmat.yaml")
+CURRENT_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+LOGCAT_CONFIGURATION_FILE_LOCATION = os.path.join(CURRENT_DIR, "logcat_hazmat.yaml")
 
 settitle("LogCat Cryptography Editor")
 
@@ -35,8 +35,6 @@ cryptography_algorithm.generate_password(16)
 
 print("Save configuration...")
 
-cryptography_algorithm.save_configuration()
-cryptography_algorithm.set_configuration_file_location(os.path.join(CURRENT_DIR, "LogCat", "logcat_hazmat.yaml"))
 cryptography_algorithm.save_configuration()
 
 print("Configuration saved.")
