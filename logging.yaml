@@ -1,0 +1,51 @@
+# logging.yaml
+version: 1
+disable_existing_loggers: False
+
+formatters:
+  logcatConsoleFormatter:
+    class: utils.CustomLogging.LogCatFormatter
+
+  fileFormatter:
+    format: '%(asctime)s | %(name)s | %(levelname)s : %(message)s'
+
+  logcatFormatter:
+    class : utils.CustomLogging.LogCatFormatter
+
+handlers:
+  permanent:
+    filename: permanent.log
+    level: ERROR
+    class: logging.FileHandler
+    formatter: fileFormatter
+
+  rotate:
+    filename: rotate.log
+    level: WARNING
+    class: logging.handlers.RotatingFileHandler
+    formatter: fileFormatter
+    maxBytes: 10000
+    backupCount: 10
+
+  timed_rotate:
+    filename: timed_rotate.log
+    level: DEBUG
+    class: logging.handlers.TimedRotatingFileHandler
+    formatter: fileFormatter
+    when: H
+    interval: 1
+    backupCount: 10
+
+  console:
+    level: DEBUG
+    class: utils.CustomLogging.PipeLineHandler
+    formatter: logcatConsoleFormatter
+
+loggers:
+  root:
+    level: DEBUG
+    handlers: [permanent]
+
+  logcatserver:
+    level: DEBUG
+    handlers: [permanent, rotate, timed_rotate, console]
