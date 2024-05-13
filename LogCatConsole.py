@@ -10,26 +10,25 @@ from queue import Queue
 
 import win32api
 
+from bpe import colorama
+from bpe.colorama import Fore
 from bpe.equipments.console import Console
 from bpe.equipments.console.HaloSpinner import HaloSpinner
 from bpe.equipments.logging.Handlers import PipeLineHandler
 from bpe.equipments.logging.LogCatServer import LogCatServer
 from bpe.equipments.platform.ColorCollection import set_color_loop
 from bpe.equipments.security.SymmetricFernet import SymmetricFernet
-from bpe.pyconio import clrscr, WHITE, BLACK, LIGHTGREEN, LIGHTCYAN, LIGHTRED, YELLOW, RED, \
-    settitle, textcolor, textbackground
+from bpe.pyconio import WHITE, BLACK, LIGHTGREEN, LIGHTCYAN, LIGHTRED, YELLOW, RED, \
+    settitle, textcolor, textbackground, textcolors, backgroundcolors
 
 
 def out(record):
     colors = highlight[record["levelno"]]
 
-    textcolor(colors[0])
-    textbackground(colors[1])
-
     # Formatting the log record:
     record['name'] = f"{record['name'][-NAME_LENGTH:]:<{NAME_LENGTH}}"
     record['levelname'] = f"{record['levelname'][-8:]: <8}"
-    print(f"{record['asctime']} | {record['levelname']} | {record['name']} | {record['msg']}")
+    print(f"{textcolors[colors[0]]}{backgroundcolors[colors[1]]}{record['asctime']} | {record['levelname']} | {record['name']} | {record['msg']}")
 
 
 unicode_sup = Console.is_unicode_supported()
@@ -41,7 +40,6 @@ halo2 = HaloSpinner(text="Initializing",
                     unicode_supported=unicode_sup)
 
 halo2.start()
-time.sleep(0.1)
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
 LOGCAT_CRYPTOGRAPHY_CONFIGURATION_FILE_LOCATION = os.path.join(CURRENT_DIR, "logcat_hazmat.yaml")
@@ -60,7 +58,6 @@ if __name__ == "__main__":
                  50: [YELLOW, RED]}
 
     halo2.text = "Setting up console colors"
-    time.sleep(0.1)
 
     set_color_loop(CURRENT_DIR, True)
 
@@ -76,14 +73,12 @@ if __name__ == "__main__":
     textbackground(BLACK)
 
     halo2.text = "Cryptographic algorithm loading"
-    time.sleep(0.1)
 
     cryptography_algorithm = SymmetricFernet()
     cryptography_algorithm.set_configuration_file_location(LOGCAT_CRYPTOGRAPHY_CONFIGURATION_FILE_LOCATION)
     cryptography_algorithm.load_configuration()
 
     halo2.text = "LogCat server starting"
-    time.sleep(0.1)
 
     kwargs = {
         "child_logger_name": "logcatserver",
@@ -95,7 +90,6 @@ if __name__ == "__main__":
     internal_logger = Queue()
 
     halo2.text = "Internal logger pipeline setting up"
-    time.sleep(0.1)
 
     for handler in logcat_server.Logger.handlers:
         if handler.name == "console" and isinstance(handler, PipeLineHandler):
@@ -111,19 +105,25 @@ if __name__ == "__main__":
     atexit.register(lambda: kill())
     win32api.SetConsoleCtrlHandler(lambda signal_type: kill(), True)
 
+    halo2.clear()
+    print(f"{Fore.GREEN}✔  Steady{Fore.RESET}")
+
     logcat_server.start()
 
     halo2.text = "Waiting for connection"
-    time.sleep(0.1)
+    halo2.spinner = "earth"
+    halo2.interval = 500
+    print()
     halo2.enabled = False
-    halo2.clear()
 
     while not logcat_server.is_connected():
         if logcat_server.is_closed():
-            halo2.enabled = False
+            if halo2.enabled:
+                halo2.enabled = False
             break
         while not internal_logger.empty():
-            halo2.enabled = False
+            if halo2.enabled:
+                halo2.enabled = False
             record = internal_logger.get()
             out(record)
         time.sleep(0.2)
@@ -142,6 +142,8 @@ if __name__ == "__main__":
             record = logcat_server.Queue.get()
         else:
             record = internal_logger.get()
+        if halo2.enabled:
+            print()
         halo2.enabled = False
         out(record)
 
