@@ -1,5 +1,7 @@
 # LogCatConsole
 
+![img.png](demo.png)
+
 ## Description
 
 LogCatConsole is a powerful Python logging utility designed to enhance logging visibility by facilitating real-time monitoring through a symmetric encrypted TCP connection. This repository provides developers with a seamless solution to monitor Python log outputs remotely, ensuring efficient debugging and monitoring of applications.
