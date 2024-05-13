@@ -5,6 +5,7 @@ import os
 import signal
 import sys
 import time
+from multiprocessing import freeze_support
 from queue import Queue
 
 import win32api
@@ -47,96 +48,102 @@ LOGCAT_CRYPTOGRAPHY_CONFIGURATION_FILE_LOCATION = os.path.join(CURRENT_DIR, "log
 LOGGING_CONFIGURATION_FILE_LOCATION = os.path.join(CURRENT_DIR, "logging.yaml")
 NAME_LENGTH = 20
 
-settitle("LogCat Console")
+if __name__ == "__main__":
+    freeze_support()
+    settitle("LogCat Console")
 
-highlight = {0: [WHITE, BLACK],
-             10: [LIGHTGREEN, BLACK],
-             20: [LIGHTCYAN, BLACK],
-             30: [YELLOW, BLACK],
-             40: [LIGHTRED, BLACK],
-             50: [YELLOW, RED]}
+    highlight = {0: [WHITE, BLACK],
+                 10: [LIGHTGREEN, BLACK],
+                 20: [LIGHTCYAN, BLACK],
+                 30: [YELLOW, BLACK],
+                 40: [LIGHTRED, BLACK],
+                 50: [YELLOW, RED]}
 
-halo2.text = "Setting up console colors"
-time.sleep(0.1)
+    halo2.text = "Setting up console colors"
+    time.sleep(0.1)
 
-set_color_loop(CURRENT_DIR, True)
+    set_color_loop(CURRENT_DIR, True)
 
-# color_test(0, 0)
-# print()
+    # color_test(0, 0)
+    # print()
 
-# for logtype in highlight:
-#     textcolor(highlight[logtype][0])
-#     textbackground(highlight[logtype][1])
-#     print(f"Test color for logtype {logtype}.")
+    # for logtype in highlight:
+    #     textcolor(highlight[logtype][0])
+    #     textbackground(highlight[logtype][1])
+    #     print(f"Test color for logtype {logtype}.")
 
-textcolor(WHITE)
-textbackground(BLACK)
+    textcolor(WHITE)
+    textbackground(BLACK)
 
-halo2.text = "Cryptographic algorithm loading"
-time.sleep(0.1)
+    halo2.text = "Cryptographic algorithm loading"
+    time.sleep(0.1)
 
-cryptography_algorithm = SymmetricFernet()
-cryptography_algorithm.set_configuration_file_location(LOGCAT_CRYPTOGRAPHY_CONFIGURATION_FILE_LOCATION)
-cryptography_algorithm.load_configuration()
+    cryptography_algorithm = SymmetricFernet()
+    cryptography_algorithm.set_configuration_file_location(LOGCAT_CRYPTOGRAPHY_CONFIGURATION_FILE_LOCATION)
+    cryptography_algorithm.load_configuration()
 
-halo2.text = "LogCat server starting"
-time.sleep(0.1)
+    halo2.text = "LogCat server starting"
+    time.sleep(0.1)
 
-kwargs = {
-    "child_logger_name": "logcatserver",
-    "child_logger_level": logging.DEBUG,
-    "logger_interface_configuration": LOGGING_CONFIGURATION_FILE_LOCATION
-}
-logcat_server = LogCatServer(**kwargs)
-logcat_server.set_cryptography_algorithm(cryptography_algorithm)
-internal_logger = Queue()
+    kwargs = {
+        "child_logger_name": "logcatserver",
+        "child_logger_level": logging.DEBUG,
+        "logger_interface_configuration": LOGGING_CONFIGURATION_FILE_LOCATION
+    }
+    logcat_server = LogCatServer(**kwargs)
+    logcat_server.set_cryptography_algorithm(cryptography_algorithm)
+    internal_logger = Queue()
 
-halo2.text = "Internal logger pipeline setting up"
-time.sleep(0.1)
+    halo2.text = "Internal logger pipeline setting up"
+    time.sleep(0.1)
 
-for handler in logcat_server.Logger.handlers:
-    if handler.name == "console" and isinstance(handler, PipeLineHandler):
-        handler.set_pipeline(internal_logger)
+    for handler in logcat_server.Logger.handlers:
+        if handler.name == "console" and isinstance(handler, PipeLineHandler):
+            handler.set_pipeline(internal_logger)
 
-def kill():
-    logcat_server.close()
-
-signal.signal(signal.SIGINT, lambda sig, frame: kill())
-signal.signal(signal.SIGTERM, lambda sig, frame: kill())
-atexit.register(kill)
-win32api.SetConsoleCtrlHandler(lambda signal_type: kill(), True)
-
-logcat_server.start()
-
-halo2.text = "Waiting for connection"
-time.sleep(0.1)
-halo2.enabled = False
-halo2.clear()
-
-while not logcat_server.is_connected():
-    if logcat_server.is_closed():
+    def kill():
         halo2.enabled = False
-        break
-    while not internal_logger.empty():
-        halo2.enabled = False
-        record = internal_logger.get()
-        out(record)
-    time.sleep(0.2)
-    halo2.enabled = True
+        print()
+        logcat_server.close()
 
-halo2.text = "Connection alive!"
-halo2.text = "Waiting for connection"
+    signal.signal(signal.SIGINT, lambda sig, frame: kill())
+    signal.signal(signal.SIGTERM, lambda sig, frame: kill())
+    atexit.register(lambda: kill())
+    win32api.SetConsoleCtrlHandler(lambda signal_type: kill(), True)
 
-while not logcat_server.is_closed():
-    while logcat_server.Queue.empty() and internal_logger.empty():
-        if not logcat_server.is_connected():
-            halo2.enabled = True
-        time.sleep(0.1)
+    logcat_server.start()
 
-    if internal_logger.empty():
-        record = logcat_server.Queue.get()
-    else:
-        record = internal_logger.get()
+    halo2.text = "Waiting for connection"
+    time.sleep(0.1)
     halo2.enabled = False
-    out(record)
-halo2.stop_and_persist("Terminated!")
+    halo2.clear()
+
+    while not logcat_server.is_connected():
+        if logcat_server.is_closed():
+            halo2.enabled = False
+            break
+        while not internal_logger.empty():
+            halo2.enabled = False
+            record = internal_logger.get()
+            out(record)
+        time.sleep(0.2)
+        halo2.enabled = True
+
+    halo2.text = "Connection alive!"
+    halo2.text = "Waiting for connection"
+
+    while not logcat_server.is_closed():
+        while logcat_server.Queue.empty() and internal_logger.empty():
+            if not logcat_server.is_connected():
+                halo2.enabled = True
+            time.sleep(0.1)
+
+        if internal_logger.empty():
+            record = logcat_server.Queue.get()
+        else:
+            record = internal_logger.get()
+        halo2.enabled = False
+        out(record)
+
+    logcat_server.join()
+    halo2.stop_and_persist("Terminated!")
