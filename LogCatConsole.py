@@ -22,36 +22,79 @@ from bpe.equipments.security.SymmetricFernet import SymmetricFernet
 from bpe.pyconio import WHITE, BLACK, LIGHTGREEN, LIGHTCYAN, LIGHTRED, YELLOW, RED, \
     settitle, textcolor, textbackground, textcolors, backgroundcolors
 
-def out(record):
-    colors = highlight[record["levelno"]]
-    record['msg'] = str(record['msg']).replace("\n", " | ")
 
-    # line components
-    time = record['asctime']
-    level = f"{record['levelname'][-8:]: <8}"
+def build_time_component(record):
+    return record['asctime']
 
+
+def build_level_component(record):
+    return f"{record['levelname'][-8:]: <8}"
+
+
+def build_name_component(record):
     name = []
     if len(record['name']) > NAME_LENGTH:
         # split name into lines
         remaining_name = record['name']
         while len(remaining_name) > NAME_LENGTH:
-            name.append(remaining_name[:NAME_LENGTH])
-            remaining_name = remaining_name[NAME_LENGTH:]
+            temp = remaining_name[:NAME_LENGTH]
+            last_dot = temp.rfind(".")
+            if last_dot > 0:
+                name.append(f"{temp[:last_dot + 1]:<{NAME_LENGTH}}")
+                remaining_name = remaining_name[last_dot + 1:]
+            else:
+                name.append(f"{temp:<{NAME_LENGTH}}")
+                remaining_name = remaining_name[NAME_LENGTH:]
             if len(remaining_name) < NAME_LENGTH:
                 name.append(f"{remaining_name:<{NAME_LENGTH}}")
 
     else:
         name.append(f"{record['name'][-NAME_LENGTH:]:<{NAME_LENGTH}}")
 
+    return name
+
+
+def build_msg_component(record):
     msg = []
-    if len(record['msg']) > MSG_LENGTH:
+    if len(str(record['msg'])) > MSG_LENGTH:
         # split message into lines
         remaining_msg = str(record['msg'])
+
+        # remaining_msg = remaining_msg.replace("\n", "NewLine")
+
         while len(remaining_msg) > 0:
-            msg.append(remaining_msg[:MSG_LENGTH])
-            remaining_msg = remaining_msg[MSG_LENGTH:]
+            temp = remaining_msg[:MSG_LENGTH]
+            last_space = temp.rfind(" ")
+            first_newline = temp.find("\n")
+            first_double_newline = temp.find("\n\n")
+
+            if first_double_newline > 0:
+                msg.append(remaining_msg[:first_double_newline])
+                msg.append(EMPTY_MSG_COMPONENT)
+                remaining_msg = remaining_msg[first_double_newline + 2:]
+            elif first_newline > 0:
+                msg.append(remaining_msg[:first_newline])
+                remaining_msg = remaining_msg[first_newline + 1:]
+            elif last_space > 0:
+                msg.append(remaining_msg[:last_space])
+                remaining_msg = remaining_msg[last_space + 1:]
+            else:
+                msg.append(remaining_msg[:MSG_LENGTH])
+                remaining_msg = remaining_msg[MSG_LENGTH:]
     else:
-        msg.append(record['msg'])
+        msg.append(str(record['msg']))
+
+    return msg
+
+
+def out(record):
+    colors = highlight[record["levelno"]]
+
+    # line components
+    time = build_time_component(record)
+    level = build_level_component(record)
+    name = build_name_component(record)
+    msg = build_msg_component(record)
 
     # build lines
     lines = []
@@ -76,6 +119,8 @@ def out(record):
     # print lines
     for line in lines:
         print(f"{textcolors[colors[0]]}{backgroundcolors[colors[1]]}{line}")
+
+
 
 
 unicode_sup = Console.is_unicode_supported()
@@ -160,10 +205,12 @@ if __name__ == "__main__":
         if handler.name == "console" and isinstance(handler, PipeLineHandler):
             handler.set_pipeline(internal_logger)
 
+
     def kill():
         halo2.enabled = False
         print()
         logcat_server.close()
+
 
     signal.signal(signal.SIGINT, lambda sig, frame: kill())
     signal.signal(signal.SIGTERM, lambda sig, frame: kill())
