@@ -17,19 +17,65 @@ from bpe.equipments.console.HaloSpinner import HaloSpinner
 from bpe.equipments.logging.Handlers import PipeLineHandler
 from bpe.equipments.logging.LogCatServer import LogCatServer
 from bpe.equipments.platform.ColorCollection import set_color_loop
+from bpe.equipments.platform.ScreenSize import get_terminal_size
 from bpe.equipments.security.SymmetricFernet import SymmetricFernet
 from bpe.pyconio import WHITE, BLACK, LIGHTGREEN, LIGHTCYAN, LIGHTRED, YELLOW, RED, \
     settitle, textcolor, textbackground, textcolors, backgroundcolors
 
-
 def out(record):
     colors = highlight[record["levelno"]]
-
-    # Formatting the log record:
-    record['name'] = f"{record['name'][-NAME_LENGTH:]:<{NAME_LENGTH}}"
-    record['levelname'] = f"{record['levelname'][-8:]: <8}"
     record['msg'] = str(record['msg']).replace("\n", " | ")
-    print(f"{textcolors[colors[0]]}{backgroundcolors[colors[1]]}{record['asctime']} | {record['levelname']} | {record['name']} | {record['msg']}")
+
+    # line components
+    time = record['asctime']
+    level = f"{record['levelname'][-8:]: <8}"
+
+    name = []
+    if len(record['name']) > NAME_LENGTH:
+        # split name into lines
+        remaining_name = record['name']
+        while len(remaining_name) > NAME_LENGTH:
+            name.append(remaining_name[:NAME_LENGTH])
+            remaining_name = remaining_name[NAME_LENGTH:]
+            if len(remaining_name) < NAME_LENGTH:
+                name.append(f"{remaining_name:<{NAME_LENGTH}}")
+
+    else:
+        name.append(f"{record['name'][-NAME_LENGTH:]:<{NAME_LENGTH}}")
+
+    msg = []
+    if len(record['msg']) > MSG_LENGTH:
+        # split message into lines
+        remaining_msg = str(record['msg'])
+        while len(remaining_msg) > 0:
+            msg.append(remaining_msg[:MSG_LENGTH])
+            remaining_msg = remaining_msg[MSG_LENGTH:]
+    else:
+        msg.append(record['msg'])
+
+    # build lines
+    lines = []
+    name_index = 0
+    msg_index = 0
+    while name_index < len(name) or msg_index < len(msg):
+        if name_index == 0 and msg_index == 0:
+            lines.append(f"{time}{SEP}{level}{SEP}{name[0]}{SEP}{msg[0]}")
+        else:
+            name_component = EMPTY_NAME_COMPONENT
+            msg_component = EMPTY_MSG_COMPONENT
+            if name_index < len(name):
+                name_component = name[name_index]
+            if msg_index < len(msg):
+                msg_component = msg[msg_index]
+            lines.append(f"{EMPTY_TIME_COMPONENT}{SEP}{EMPTY_LEVEL_COMPONENT}{SEP}{name_component}{SEP}{msg_component}")
+        if name_index < len(name):
+            name_index += 1
+        if msg_index < len(msg):
+            msg_index += 1
+
+    # print lines
+    for line in lines:
+        print(f"{textcolors[colors[0]]}{backgroundcolors[colors[1]]}{line}")
 
 
 unicode_sup = Console.is_unicode_supported()
@@ -45,7 +91,25 @@ halo2.start()
 CURRENT_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
 LOGCAT_CRYPTOGRAPHY_CONFIGURATION_FILE_LOCATION = os.path.join(CURRENT_DIR, "logcat_hazmat.yaml")
 LOGGING_CONFIGURATION_FILE_LOCATION = os.path.join(CURRENT_DIR, "logging.yaml")
+
+terminal_size = get_terminal_size()
+print(f"Terminal size: {terminal_size}")
+if terminal_size[0] < 120 or terminal_size[1] < 30:
+    print("Terminal size is too small! Please resize to at least 120x24.")
+    terminal_size = (120, 30)
+
+# sample: 2024-05-25 16:31:36,372
+SEP = " | "
+SEPARATOR_LENGTH = len(SEP)
+ASCTIME_LENGTH = 23
+LEVEL_LENGTH = 8
 NAME_LENGTH = 20
+MSG_LENGTH = terminal_size[0] - ASCTIME_LENGTH - LEVEL_LENGTH - NAME_LENGTH - 3 * SEPARATOR_LENGTH
+
+EMPTY_TIME_COMPONENT = " " * ASCTIME_LENGTH
+EMPTY_LEVEL_COMPONENT = " " * LEVEL_LENGTH
+EMPTY_NAME_COMPONENT = " " * NAME_LENGTH
+EMPTY_MSG_COMPONENT = " " * MSG_LENGTH
 
 if __name__ == "__main__":
     freeze_support()
