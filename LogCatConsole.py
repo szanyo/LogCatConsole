@@ -28,6 +28,7 @@ def out(record):
     # Formatting the log record:
     record['name'] = f"{record['name'][-NAME_LENGTH:]:<{NAME_LENGTH}}"
     record['levelname'] = f"{record['levelname'][-8:]: <8}"
+    record['msg'] = str(record['msg']).replace("\n", " | ")
     print(f"{textcolors[colors[0]]}{backgroundcolors[colors[1]]}{record['asctime']} | {record['levelname']} | {record['name']} | {record['msg']}")
 
 
