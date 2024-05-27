@@ -56,9 +56,9 @@ def build_name_component(record):
 
 def build_msg_component(record):
     msg = []
-    if len(str(record['msg'])) > MSG_LENGTH:
+    if len(str(record['message'])) > MSG_LENGTH:
         # split message into lines
-        remaining_msg = str(record['msg'])
+        remaining_msg = str(record['message'])
 
         # remaining_msg = remaining_msg.replace("\n", "NewLine")
 
@@ -82,7 +82,7 @@ def build_msg_component(record):
                 msg.append(remaining_msg[:MSG_LENGTH])
                 remaining_msg = remaining_msg[MSG_LENGTH:]
     else:
-        msg.append(str(record['msg']))
+        msg.append(str(record['message']))
 
     return msg
 
