@@ -10,7 +10,6 @@ from queue import Queue
 
 import win32api
 
-from bpe import colorama
 from bpe.colorama import Fore
 from bpe.equipments.console import Console
 from bpe.equipments.console.HaloSpinner import HaloSpinner
@@ -69,17 +68,22 @@ def build_msg_component(record):
             first_double_newline = temp.find("\n\n")
 
             if first_double_newline > 0:
-                msg.append(remaining_msg[:first_double_newline])
+                sub_msg = remaining_msg[:first_double_newline] + " " * (MSG_LENGTH - first_double_newline)
+                msg.append(sub_msg)
                 msg.append(EMPTY_MSG_COMPONENT)
                 remaining_msg = remaining_msg[first_double_newline + 2:]
             elif first_newline > 0:
-                msg.append(remaining_msg[:first_newline])
+                sub_msg = remaining_msg[:first_newline] + " " * (MSG_LENGTH - first_newline)
+                msg.append(sub_msg)
                 remaining_msg = remaining_msg[first_newline + 1:]
             elif last_space > 0:
-                msg.append(remaining_msg[:last_space])
+                sub_msg = remaining_msg[:last_space] + " " * (MSG_LENGTH - last_space)
+                msg.append(sub_msg)
                 remaining_msg = remaining_msg[last_space + 1:]
             else:
-                msg.append(remaining_msg[:MSG_LENGTH])
+                sub_msg = remaining_msg[:MSG_LENGTH]
+                sub_msg = sub_msg + " " * (MSG_LENGTH - len(sub_msg))
+                msg.append(sub_msg)
                 remaining_msg = remaining_msg[MSG_LENGTH:]
     else:
         msg.append(str(record['message']))
