@@ -3,7 +3,7 @@
 import os
 import sys
 
-from bpe.equipments.security.SymmetricFernet import SymmetricFernet
+from bpe.utils.security.SymmetricFernet import SymmetricFernet
 from bpe.pyconio import settitle
 
 

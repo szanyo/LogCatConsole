@@ -11,13 +11,13 @@ from queue import Queue
 import win32api
 
 from bpe.colorama import Fore
-from bpe.equipments.console import Console
-from bpe.equipments.console.HaloSpinner import HaloSpinner
-from bpe.equipments.logging.Handlers import PipeLineHandler
-from bpe.equipments.logging.LogCatServer import LogCatServer
-from bpe.equipments.platform.ColorCollection import set_color_loop
-from bpe.equipments.platform.ScreenSize import get_terminal_size
-from bpe.equipments.security.SymmetricFernet import SymmetricFernet
+from bpe.utils.console import Console
+from bpe.utils.console.HaloSpinner import HaloSpinner
+from bpe.utils.logging.Handlers import PipeLineHandler
+from bpe.utils.logging.LogCatServer import LogCatServer
+from bpe.utils.platform.ColorCollection import set_color_loop
+from bpe.utils.platform.ScreenSize import get_terminal_size
+from bpe.utils.security.SymmetricFernet import SymmetricFernet
 from bpe.pyconio import WHITE, BLACK, LIGHTGREEN, LIGHTCYAN, LIGHTRED, YELLOW, RED, \
     settitle, textcolor, textbackground, textcolors, backgroundcolors
 
